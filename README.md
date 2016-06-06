@@ -10,6 +10,13 @@ install`) for older browsers.
 
 ## Installation
 
+### Via composer
+
+```sh
+composer config repositories.lingo_srcset vcs https://github.com/lingo/silverstripe_srcset.git
+composer require lingo/silverstripe_srcset ^0.1
+```
+
 ## Usage
 
 Simply call the `Responsive` method on your image. You should provide a media
