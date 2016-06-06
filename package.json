@@ -1,0 +1,26 @@
+{
+  "name": "silverstripe_srcset",
+  "version": "1.0.0",
+  "description": "Easily use responsive images in SilverStripe templates",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lingo/silverstripe_srcset.git"
+  },
+  "keywords": [
+    "responsive",
+    "img",
+    "srcset",
+    "silverstripe"
+  ],
+  "author": "Luke Hudson <npm@speak.geek.nz>",
+  "bugs": {
+    "url": "https://github.com/lingo/silverstripe_srcset/issues"
+  },
+  "homepage": "https://github.com/lingo/silverstripe_srcset#readme",
+  "dependencies": {
+    "respimage": "^1.4.2"
+  }
+}
