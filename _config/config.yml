@@ -1,0 +1,8 @@
+---
+Name: silverstripe_srcset
+Before:
+  - 'mysite/*'
+---
+Image:
+  extensions:
+    - ResponsiveImageDecorator
