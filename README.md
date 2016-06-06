@@ -29,6 +29,19 @@ sizes/) for explanation of this attribute.
 <% end_if %>
 ```
 
+### CSS
+
+You'll probably want to have a bit of CSS also set up to make images scale nicely, something like this:
+
+```css
+
+img {
+	width:  auto;
+	height: 100%;
+}
+
+```
+
 ## More information
 
 You can also use the `.BackgroundAttr` method if you need to add an inline
