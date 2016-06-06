@@ -27,7 +27,7 @@ class ResponsiveImageDecorator extends DataExtension {
 	 *                            e.g. SetWidth
 	 * @return Image_Responsive
 	 */
-	public function ResponsiveImage($mediaQuery=false, $method=false) {
+	public function Responsive($mediaQuery=false, $method=false) {
 		$width        = $this->owner->getWidth();
 		$height       = $this->owner->getHeight();
 		if ($height   === null || $width === null) {
