@@ -3,7 +3,7 @@
     "description": "Allows for easy use of responsive images (img.srcset) in SilverStripe",
     "require": {
         "php": "^5.3.3 || ^7.0",
-        "silverstripe/framework": "^3.*"
+        "silverstripe/framework": "^3.0"
     },
     "authors": [
         {
