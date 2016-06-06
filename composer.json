@@ -15,5 +15,8 @@
     ]
     "support": {
         "issues": "https://github.com/lingo/silverstripe_srcset/issues"
-    }
+    },
+    "extra": {
+        "installer-name": "silverstripe_srcset"
+    },
 }
