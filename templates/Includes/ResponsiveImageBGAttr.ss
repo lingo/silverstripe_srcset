@@ -1,0 +1,5 @@
+data-small="$DefaultSource"
+data-sizes="$DefaultSourceWidth $MediumSourceWidth $LargeSourceWidth"
+data-medium="$MediumSource"
+data-large="$LargeSource"
+style="background-image: url($DefaultSource);"
