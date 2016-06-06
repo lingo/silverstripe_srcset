@@ -1,9 +1,11 @@
 {
     "name": "lingo/silverstripe_srcset",
     "description": "Allows for easy use of responsive images (img.srcset) in SilverStripe",
+    "type": "silverstripe-module",
     "require": {
-        "php": "^5.3.3 || ^7.0",
-        "silverstripe/framework": "^3.0"
+        "php":                    "^5.3.3 || ^7.0",
+        "silverstripe/framework": "^3.0",
+        "silverstripe/cms":       "^3.0",
     },
     "authors": [
         {
@@ -11,4 +13,7 @@
             "email": "lukeletters@gmail.com"
         }
     ]
+    "support": {
+        "issues": "https://github.com/lingo/silverstripe_srcset/issues"
+    }
 }
