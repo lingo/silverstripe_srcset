@@ -5,18 +5,18 @@
     "require": {
         "php":                    "^5.3.3 || ^7.0",
         "silverstripe/framework": "^3.0",
-        "silverstripe/cms":       "^3.0",
+        "silverstripe/cms":       "^3.0"
     },
     "authors": [
         {
             "name": "Luke Hudson",
             "email": "lukeletters@gmail.com"
         }
-    ]
+    ],
     "support": {
         "issues": "https://github.com/lingo/silverstripe_srcset/issues"
     },
     "extra": {
         "installer-name": "silverstripe_srcset"
-    },
+    }
 }
