@@ -1,5 +1,5 @@
 {
-    "name": "lingo/silverstripe_srcset",
+    "name": "lingo/silverstripe_respimage",
     "description": "Allows for easy use of responsive images (img.srcset) in SilverStripe",
     "type": "silverstripe-module",
     "require": {
@@ -17,6 +17,6 @@
         "issues": "https://github.com/lingo/silverstripe_srcset/issues"
     },
     "extra": {
-        "installer-name": "silverstripe_srcset"
+        "installer-name": "silverstripe_respimage"
     }
 }
