@@ -14,7 +14,7 @@ install`) for older browsers.
 
 ```sh
 composer config repositories.lingo_srcset vcs https://github.com/lingo/silverstripe_srcset.git
-composer require lingo/silverstripe_srcset
+composer require lingo/silverstripe_srcset ^0.1
 ```
 
 ## Usage
@@ -46,3 +46,5 @@ img {
 
 You can also use the `.BackgroundAttr` method if you need to add an inline
 style attribute to an element, in order to use a responsive background image.
+
+See also  [the full documentation](docs/en/index.md)
