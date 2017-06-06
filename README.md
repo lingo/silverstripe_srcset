@@ -16,7 +16,7 @@ See also  [the full documentation](docs/en/index.md)
 
 ```sh
 composer config repositories.lingo_srcset vcs https://github.com/lingo/silverstripe_srcset.git
-composer require lingo/silverstripe_srcset ^0.1
+composer require lingo/silverstripe_srcset
 ```
 
 ## Usage
