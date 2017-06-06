@@ -1,8 +1,9 @@
 {
-    "name": "lingo/silverstripe_respimage",
+    "name":        "lingo/silverstripe_respimage",
     "description": "Allows for easy use of responsive images (img.srcset) in SilverStripe",
-    "type": "silverstripe-module",
-    "require": {
+    "type":        "silverstripe-module",
+    "license":     "MIT",
+    "require":     {
         "php":                    "^5.3.3 || ^7.0",
         "silverstripe/framework": "^3.0",
         "silverstripe/cms":       "^3.0"
