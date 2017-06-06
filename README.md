@@ -1,4 +1,4 @@
-# SilverStripe Source-Set
+# SilverStripe Responsive Images
 
 Easily use responsive images in SilverStripe templates, via the HTML5 `img`
 tag's `srcset` attribute.
@@ -15,8 +15,7 @@ See also  [the full documentation](docs/en/index.md)
 ### Via composer
 
 ```sh
-composer config repositories.lingo_srcset vcs https://github.com/lingo/silverstripe_srcset.git
-composer require lingo/silverstripe_srcset
+composer require lingo/silverstripe_respimage
 ```
 
 ## Usage
