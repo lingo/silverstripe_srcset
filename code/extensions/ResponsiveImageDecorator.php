@@ -5,20 +5,15 @@
  * with srcset attributes
  *
  * @author  Lucas Hudson <lucas@speak.geek.nz>
- * @package PPC
  */
+
+class ResponsiveImageException extends Exception {}
 
 /**
  * ResponsiveImage decorator for image class.
  * This is a helper for responsive design using the HTML5 <picture> tag OR <img srcset...>
  */
 class ResponsiveImageDecorator extends DataExtension {
-	/**
-	 * This is used to calculate the smallest size image, based
-	 * on the size of the original image.
-	 * @var float
-	 */
-	private static $small_scaling_divisor = 4;
 
 	/**
 	 * The new method provided on Image instances
@@ -27,38 +22,50 @@ class ResponsiveImageDecorator extends DataExtension {
 	 *                            e.g. SetWidth
 	 * @return Image_Responsive
 	 */
-	public function Responsive($mediaQuery=false, $method=false) {
-		$width        = $this->owner->getWidth();
-		$height       = $this->owner->getHeight();
+	public function Responsive($mediaQuery=false, $method=false, $methodW=null, $methodH=null) {
+		if (!$this->owner) {
+			throw new ResponsiveImageException("No owner for decorator ResponsiveImageDecorator");
+		}
+
+		// Allow use of Responsive(query, 'SetHeight', heightInPx)
+		//
+		if (strstr($method, 'Height')) {
+			if ($methodH === null) {
+				$methodH = $methodW;
+			}
+			if ($this->owner->getHeight() == 0) {
+				throw new ResponsiveImageException('Source image has 0 height');
+			}
+			$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
+			$methodW     = $methodH * $aspectRatio;
+		} elseif (strstr($method, 'Width')) {
+			if ($this->owner->getHeight() == 0) {
+				throw new ResponsiveImageException('Source image has 0 height');
+			}
+			$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
+			$methodH     = $methodW / $aspectRatio;
+		}
+
+		$width        = $methodW ? $methodW : $this->owner->getWidth();
+		$height       = $methodH ? $methodH : $this->owner->getHeight();
 		if ($height   === null || $width === null) {
 			return null;
 		}
-
-		$smlW = $width / self::$small_scaling_divisor;
-		$smlH = $height / self::$small_scaling_divisor;
 
 		// Hacky: We create Image_Cached in order to then use the data
 		// $image     = $this->owner->CroppedImage($smlW, $smlH);
 		$image        = Image_Responsive::create($this->owner->Filename);
 		$image->Title = $this->owner->Title;
-		$image->setOriginal($this->owner);
+		$image->setOriginal($this->owner, $width, $height);
+
 		if ($method) {
 			$image->setMethod($method);
 		}
-		$image->setResponsiveDimensions($smlW, $smlH);
 
 		if ($mediaQuery) {
 			$image->setMediaQuery($mediaQuery);
 		}
 		return $image;
-	}
-
-	/**
-	 * This is a debug method, and shouldn't ever show unless someone
-	 * has instantiated the ResponsiveImage class directly.
-	 */
-	public function getTag() {
-		return 'ResponsiveImage';
 	}
 
 }
@@ -82,18 +89,16 @@ class Image_Responsive extends Image_Cached {
 	private static $default_method = 'SetWidth';
 
 	/**
-	 * How much larger the 'large' size image is than the minimum sizes passed to
-	 * ResponsiveImage constructor
+	 * How much smaller the 'small' size image is than the original image size
 	 * @var integer
 	 */
+	private static $small_scaling_factor  = 0.25;
 
-	private static $large_scaling_factor  = 4;
 	/**
-	 * How much larger the 'medium' size image is than the minimum sizes passed to
-	 * ResponsiveImage constructor
+	 * How much smaller the 'medium' size image is than the original image size
 	 * @var integer
 	 */
-	private static $medium_scaling_factor = 2;
+	private static $medium_scaling_factor = 0.5;
 
 
 	public function __construct($filename = null, $isSingleton = false) {
@@ -112,52 +117,64 @@ class Image_Responsive extends Image_Cached {
 	 * Set the original Image source
 	 * @param Image $original
 	 */
-	public function setOriginal($original) {
+	public function setOriginal($original, $width, $height) {
 		$this->original = $original;
+		$this->calcResponsiveDimensions($width, $height);
 	}
-
 
 	/**
 	 * This is the method that actually calculates the sizes of all the versions
 	 * of this image
-	 * @param int $smlW Minimum width allowed for scaled copies.
-	 * @param int $smlH Minimum height allowed for scaled copies.
+	 * @param int $width width to use for scaled/cropped images
+	 * @param int $height height to use for scaled/cropped images
 	 */
-	public function setResponsiveDimensions($smlW, $smlH) {
-		$width     = $this->original->getWidth();
-		$height    = $this->original->getHeight();
-
-		if ($smlW == 0 || $smlW === min($smlW, $smlH)) {
-			// calc smlH by aspect ratio
-			$smlW = $width / $height * $smlH;
-		} elseif ($smlH == 0 || $smlH === min($smlW, $smlH)) {
-			// calc smlW by aspect ratio
-			$smlH = $height / $width * $smlW;
+	public function calcResponsiveDimensions($width, $height) {
+		if (!$this->original) {
+			throw new ResponsiveImageException("No original image exists for Image_Responsive, ensure you call setOriginal first");
+		}
+		if (!($width && $height)) {
+			throw new ResponsiveImageException("0 pixel dimension source image");
 		}
 
-		$this->smallWidth  = intval($smlW);
-		$this->smallHeight = intval($smlH);
+		$aspectRatio = ($height !== 0) ? $width / $height : 1;
 
-		if ($this->method && strstr($this->method, 'Height')) {
-			$maxWidth        = floor($height * $smlW / $smlH);
-			$maxWidth        = min(self::$large_scaling_factor * $smlW, $maxWidth);
-			$this->maxWidth  = min($this->original->getWidth(), $maxWidth);
-			$this->maxHeight = min($this->smallHeight * self::$large_scaling_factor, $this->original->getHeight());
+		$this->maxWidth  = $width;
+		$this->maxHeight = $height;
+
+		$small_scaling_factor  = $this->config()->get('small_scaling_factor');
+		$medium_scaling_factor = $this->config()->get('medium_scaling_factor');
+
+		if (strstr($this->getMethod(), 'Height')) {
+			$this->smallHeight = round($height * $small_scaling_factor);
+			$this->smallWidth  = round($this->smallHeight * $aspectRatio);
+
+			$this->medHeight   = round($height * $medium_scaling_factor);
+			$this->medWidth    = round($this->medHeight * $aspectRatio);
 		} else {
-			$maxHeight       = floor($width * $smlH / $smlW);
-			$maxHeight       = min(self::$large_scaling_factor * $smlH, $maxHeight);
-			$this->maxWidth  = min($this->smallWidth * self::$large_scaling_factor, $this->original->getWidth());
-			$this->maxHeight = min($this->original->getHeight(), $maxHeight);
+			$this->smallWidth  = $width * $small_scaling_factor;
+			$this->smallHeight = round($this->smallWidth / $aspectRatio);
+
+			$this->medWidth    = round($width * $medium_scaling_factor);
+			$this->medHeight   = round($this->medWidth / $aspectRatio);
 		}
-		$this->medWidth    = intval(floor(($this->smallWidth  + $this->maxWidth)/2));
-		$this->medHeight   = intval(floor(($this->smallHeight + $this->maxHeight/2)));
 	}
 
+
+	public function getMethod() {
+		return $this->method ? $this->method : self::$default_method;
+	}
+
+	/**
+	 * Set the method that will be used to generate formatted images
+	 * @see  Image::generateFormattedImage
+	 * @param string $method  e.g. SetWidth,CroppedImage,SetHeight etc.
+	 */
 	public function setMethod($method) {
 		$this->method = $method;
 	}
 
-	public function getDefaultSourceWidth() {
+
+	public function getSmallSourceWidth() {
 		return floor($this->smallWidth) . 'w';
 	}
 	public function getMediumSourceWidth() {
@@ -167,7 +184,7 @@ class Image_Responsive extends Image_Cached {
 		return floor($this->maxWidth) . 'w';
 	}
 
-	public function getDefaultSourceHeight() {
+	public function getSmallSourceHeight() {
 		return floor($this->smallHeight) . 'h';
 	}
 	public function getMediumSourceHeight() {
@@ -177,38 +194,29 @@ class Image_Responsive extends Image_Cached {
 		return floor($this->maxHeight) . 'h';
 	}
 
-	public function getDefaultSource() {
-		if (!$this->method) {
-			$this->method = self::$default_method;
-		}
+	public function getSmallSource() {
 		if (strstr($this->method, 'Height')) {
-			return $this->original->getFormattedImage($this->method, $this->smallHeight)->URL;
+			return $this->original->getFormattedImage($this->getMethod(), $this->smallHeight)->URL;
 		}
-		return $this->original->getFormattedImage($this->method, $this->smallWidth, $this->smallHeight)->URL;
+		return $this->original->getFormattedImage($this->getMethod(), $this->smallWidth, $this->smallHeight)->URL;
 	}
 
 	public function getMediumSource() {
-		if (!$this->method) {
-			$this->method = self::$default_method;
-		}
 		if (strstr($this->method, 'Height')) {
-			return $this->original->getFormattedImage($this->method, $this->medHeight)->URL;
+			return $this->original->getFormattedImage($this->getMethod(), $this->medHeight)->URL;
 		}
-		return $this->original->getFormattedImage($this->method, $this->medWidth, $this->medHeight)->URL;
+		return $this->original->getFormattedImage($this->getMethod(), $this->medWidth, $this->medHeight)->URL;
 	}
 
 	public function getLargeSource() {
-		if (!$this->method) {
-			$this->method = self::$default_method;
-		}
 		if ($this->maxWidth == $this->original->getWidth()
 			&& $this->maxHeight == $this->original->getHeight()) {
 			return $this->original->getURL();
 		}
 		if (strstr($this->method, 'Height')) {
-			return $this->original->getFormattedImage($this->method, $this->maxHeight)->URL;
+			return $this->original->getFormattedImage($this->getMethod(), $this->maxHeight)->URL;
 		}
-		return $this->original->getFormattedImage($this->method, $this->maxWidth, $this->maxHeight)->URL;
+		return $this->original->getFormattedImage($this->getMethod(), $this->maxWidth, $this->maxHeight)->URL;
 	}
 
 	public function getTag() {

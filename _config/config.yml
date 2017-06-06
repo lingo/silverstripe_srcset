@@ -6,3 +6,6 @@ Before:
 Image:
   extensions:
     - ResponsiveImageDecorator
+Image_Responsive:
+  medium_scaling_factor: 0.5
+  small_scaling_factor:  0.25

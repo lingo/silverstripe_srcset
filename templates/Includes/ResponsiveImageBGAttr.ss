@@ -1,5 +1,5 @@
-data-small="$DefaultSource"
-data-sizes="$DefaultSourceWidth $MediumSourceWidth $LargeSourceWidth"
+data-small="$SmallSource"
+data-sizes="$SmallSourceWidth $MediumSourceWidth $LargeSourceWidth"
 data-medium="$MediumSource"
 data-large="$LargeSource"
-style="background-image: url($DefaultSource);"
+style="background-image: url($SmallSource);"
