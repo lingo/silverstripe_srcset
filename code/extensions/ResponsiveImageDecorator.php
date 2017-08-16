@@ -77,6 +77,8 @@ class ResponsiveImageDecorator extends DataExtension {
  */
 class Image_Responsive extends Image_Cached {
 
+	private   $tinyWidth;
+	private   $tinyHeight;
 	private   $smallWidth;
 	private   $smallHeight;
 	private   $maxWidth;
@@ -90,6 +92,14 @@ class Image_Responsive extends Image_Cached {
 	private $method = false;
 
 	private static $default_method = 'SetWidth';
+
+
+	/**
+	 * Maximum size in pixels of tiny image longest side
+	 * @var integer
+	 */
+	private static $tiny_max_size = 64;
+
 
 	/**
 	 * How much smaller the 'small' size image is than the original image size
@@ -125,6 +135,16 @@ class Image_Responsive extends Image_Cached {
 		$this->calcResponsiveDimensions($width, $height);
 	}
 
+	protected static function image_to_data_url($image) {
+		$absoluteFilename = BASE_PATH . DIRECTORY_SEPARATOR . $image->Filename;
+		$imageData = file_get_contents($absoluteFilename);
+		// Read image path, convert to base64 encoding
+		$imageData = base64_encode($imageData);
+		// Format the image SRC:  data:{mime};base64,{data};
+		$src = 'data:'.mime_content_type($absoluteFilename).';base64,'.$imageData;
+		return $src;
+	}
+
 	/**
 	 * This is the method that actually calculates the sizes of all the versions
 	 * of this image
@@ -148,12 +168,21 @@ class Image_Responsive extends Image_Cached {
 		$medium_scaling_factor = $this->config()->get('medium_scaling_factor');
 
 		if (strstr($this->getMethod(), 'Height')) {
+			$this->tinyHeight  = min(self::$tiny_max_size, $height * ($small_scaling_factor/2));
+			$this->tinyWidth   = $this->tinyHeight * $aspectRatio;
+
+			$this->smallHeight = round($height * $small_scaling_factor);
+			$this->smallWidth  = round($this->smallHeight * $aspectRatio);
+
 			$this->smallHeight = round($height * $small_scaling_factor);
 			$this->smallWidth  = round($this->smallHeight * $aspectRatio);
 
 			$this->medHeight   = round($height * $medium_scaling_factor);
 			$this->medWidth    = round($this->medHeight * $aspectRatio);
 		} else {
+			$this->tinyWidth   = min(self::$tiny_max_size, $width * ($small_scaling_factor/2));
+			$this->tinyHeight  = $this->tinyWidth / $aspectRatio;
+
 			$this->smallWidth  = $width * $small_scaling_factor;
 			$this->smallHeight = round($this->smallWidth / $aspectRatio);
 
@@ -195,6 +224,53 @@ class Image_Responsive extends Image_Cached {
 	}
 	public function getLargeSourceHeight() {
 		return floor($this->maxHeight) . 'h';
+	}
+
+	public function getTinySourceAttributes() {
+		$image = $this->getTinyBlurredImage();
+		if ($image) {
+			$dataURI = self::image_to_data_url($image);
+			return <<<HTML
+		style="background: url({$dataURI}) no-repeat; background-size: cover;"
+HTML;
+		}
+	}
+
+	public function getTinyBlurredSource() {
+		return $this->getTinyBlurredImage()->URL;
+	}
+
+	public function getTinyBlurredImage() {
+		$image = null;
+		$args  = null;
+
+		if ($this->method === 'FillMax') {
+			$args  = array('Fill', $this->tinyWidth, $this->tinyHeight);
+			$image = $this->original->FillMax($this->tinyWidth, $this->tinyHeight);
+		} elseif (strstr($this->method, 'Height')) {
+			$args  = array($this->getMethod(), $this->tinyHeight);
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->tinyHeight);
+		} else {
+			$args  = array($this->getMethod(), $this->tinyWidth, $this->tinyHeight);
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->tinyWidth, $this->tinyHeight);
+		}
+
+		if ($image) {
+			$backend = Injector::inst()->createWithArgs(
+				Image::config()->backend,
+				array(
+					Director::baseFolder()."/" . $image->Filename,
+					$args
+				)
+			);
+			if ($backend && $backend->hasImageResource()) {
+				$imageRsrc = $backend->getImageResource();
+				if (imagefilter($imageRsrc, IMG_FILTER_GAUSSIAN_BLUR, 8)) {
+					$backend->writeTo(BASE_PATH . DIRECTORY_SEPARATOR . $image->Filename);
+				}
+			}
+			return $image;
+		}
 	}
 
 	public function getSmallSource() {

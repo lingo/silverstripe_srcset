@@ -1,3 +1,4 @@
+$TinySourceAttributes
 data-small="$SmallSource"
 data-sizes="$SmallSourceWidth $MediumSourceWidth $LargeSourceWidth"
 data-medium="$MediumSource"
