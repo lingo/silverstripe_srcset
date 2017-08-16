@@ -274,6 +274,9 @@ HTML;
 	}
 
 	public function getSmallSource() {
+		if ($this->method === 'FillMax') {
+			return $this->original->FillMax($this->smallWidth, $this->smallHeight)->URL;
+		}
 		if (strstr($this->method, 'Height')) {
 			return $this->original->getFormattedImage($this->getMethod(), $this->smallHeight)->URL;
 		}
@@ -281,6 +284,9 @@ HTML;
 	}
 
 	public function getMediumSource() {
+		if ($this->method === 'FillMax') {
+			return $this->original->FillMax($this->medWidth, $this->medHeight)->URL;
+		}
 		if (strstr($this->method, 'Height')) {
 			return $this->original->getFormattedImage($this->getMethod(), $this->medHeight)->URL;
 		}
@@ -291,6 +297,9 @@ HTML;
 		if ($this->maxWidth == $this->original->getWidth()
 			&& $this->maxHeight == $this->original->getHeight()) {
 			return $this->original->getURL();
+		}
+		if ($this->method === 'FillMax') {
+			return $this->original->FillMax($this->maxWidth, $this->maxHeight)->URL;
 		}
 		if (strstr($this->method, 'Height')) {
 			return $this->original->getFormattedImage($this->getMethod(), $this->maxHeight)->URL;
