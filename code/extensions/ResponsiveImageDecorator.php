@@ -313,7 +313,16 @@ HTML;
 	}
 
 	public function getBackgroundAttr() {
-		return $this->renderWith('ResponsiveImageBGAttr');
+		/**
+		 * IF we render with source_file_comments enabled, then this breaks tags due to html comments within a tag.
+		 * So, we temporarily disable, in case.
+		 */
+		$commentsEnabled = Config::inst()->get('SSViewer', 'source_file_comments');
+		Config::inst()->update('SSViewer', 'source_file_comments', false);
+
+		$html = $this->renderWith('ResponsiveImageBGAttr');
+		Config::inst()->update('SSViewer', 'source_file_comments', $commentsEnabled);
+		return $html;
 	}
 
 	public function getWidth() {
