@@ -22,7 +22,7 @@ class ResponsiveImageDecorator extends DataExtension {
 	 *                            e.g. SetWidth
 	 * @return Image_Responsive
 	 */
-	public function Responsive($mediaQuery=false, $method=false, $methodW=null, $methodH=null) {
+	public function Responsive($mediaQuery=false, $method=false, $methodW=null, $methodH=null, $extraClasses='') {
 		if (!$this->owner) {
 			throw new ResponsiveImageException("No owner for decorator ResponsiveImageDecorator");
 		}
@@ -65,6 +65,7 @@ class ResponsiveImageDecorator extends DataExtension {
 		if ($mediaQuery) {
 			$image->setMediaQuery($mediaQuery);
 		}
+		$image->addExtraClasses($extraClasses);
 		return $image;
 	}
 
@@ -76,13 +77,15 @@ class ResponsiveImageDecorator extends DataExtension {
  */
 class Image_Responsive extends Image_Cached {
 
-	private $smallWidth;
-	private $smallHeight;
-	private $maxWidth;
-	private $maxHeight;
-	private $medWidth;
-	private $medHeight;
-	private $mediaQuery;
+	private   $smallWidth;
+	private   $smallHeight;
+	private   $maxWidth;
+	private   $maxHeight;
+	private   $medWidth;
+	private   $medHeight;
+	private   $mediaQuery;
+	protected $extraClassNames;
+
 
 	private $method = false;
 
@@ -234,5 +237,13 @@ class Image_Responsive extends Image_Cached {
 
 	public function getHeight() {
 		return $this->original ? $this->original->getHeight() : $this->smallHeight;
+	}
+
+	public function addExtraClasses($classNamesSeparatedBySpaces) {
+		$this->extraClassNames = $classNamesSeparatedBySpaces;
+	}
+
+	public function getExtraClasses() {
+		return $this->extraClassNames;
 	}
 }
