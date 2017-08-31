@@ -23,50 +23,55 @@ class ResponsiveImageDecorator extends DataExtension {
 	 * @return Image_Responsive
 	 */
 	public function Responsive($mediaQuery=false, $method=false, $methodW=null, $methodH=null, $extraClasses='') {
-		if (!$this->owner) {
-			throw new ResponsiveImageException("No owner for decorator ResponsiveImageDecorator");
-		}
-
-		// Allow use of Responsive(query, 'SetHeight', heightInPx)
-		//
-		if (strstr($method, 'Height')) {
-			if ($methodH === null) {
-				$methodH = $methodW;
+		try {
+			if (!$this->owner) {
+				throw new ResponsiveImageException("No owner for decorator ResponsiveImageDecorator");
 			}
-			if ($this->owner->getHeight() == 0) {
-				throw new ResponsiveImageException('Source image has 0 height');
+
+			// Allow use of Responsive(query, 'SetHeight', heightInPx)
+			//
+			if (strstr($method, 'Height')) {
+				if ($methodH === null) {
+					$methodH = $methodW;
+				}
+				if ($this->owner->getHeight() == 0) {
+					throw new ResponsiveImageException('Source image has 0 height');
+				}
+				$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
+				$methodW     = $methodH * $aspectRatio;
+			} elseif (strstr($method, 'Width')) {
+				if ($this->owner->getHeight() == 0) {
+					throw new ResponsiveImageException('Source image has 0 height');
+				}
+				$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
+				$methodH     = $methodW / $aspectRatio;
 			}
-			$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
-			$methodW     = $methodH * $aspectRatio;
-		} elseif (strstr($method, 'Width')) {
-			if ($this->owner->getHeight() == 0) {
-				throw new ResponsiveImageException('Source image has 0 height');
+
+			$width        = $methodW ? $methodW : $this->owner->getWidth();
+			$height       = $methodH ? $methodH : $this->owner->getHeight();
+			if ($height   === null || $width === null) {
+				return null;
 			}
-			$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
-			$methodH     = $methodW / $aspectRatio;
-		}
 
-		$width        = $methodW ? $methodW : $this->owner->getWidth();
-		$height       = $methodH ? $methodH : $this->owner->getHeight();
-		if ($height   === null || $width === null) {
-			return null;
-		}
+			// Hacky: We create Image_Cached in order to then use the data
+			// $image     = $this->owner->CroppedImage($smlW, $smlH);
+			$image        = Image_Responsive::create($this->owner->Filename);
+			$image->Title = $this->owner->Title;
+			$image->setOriginal($this->owner, $width, $height);
 
-		// Hacky: We create Image_Cached in order to then use the data
-		// $image     = $this->owner->CroppedImage($smlW, $smlH);
-		$image        = Image_Responsive::create($this->owner->Filename);
-		$image->Title = $this->owner->Title;
-		$image->setOriginal($this->owner, $width, $height);
+			if ($method) {
+				$image->setMethod($method);
+			}
 
-		if ($method) {
-			$image->setMethod($method);
+			if ($mediaQuery) {
+				$image->setMediaQuery($mediaQuery);
+			}
+			$image->addExtraClasses($extraClasses);
+			return $image;
+		} catch(ResponsiveImageException $ex) {
+			// silent fallback to original
+			return $this->owner;
 		}
-
-		if ($mediaQuery) {
-			$image->setMediaQuery($mediaQuery);
-		}
-		$image->addExtraClasses($extraClasses);
-		return $image;
 	}
 
 }
