@@ -236,7 +236,7 @@ class Image_Responsive extends Image_Cached {
 		if ($image) {
 			$dataURI = self::image_to_data_url($image);
 			return <<<HTML
-		style="background-image: url({$dataURI}) no-repeat; background-size: cover;"
+		style="background-image: url({$dataURI}); background-repeat: no-repeat; background-size: cover;"
 HTML;
 		}
 	}
