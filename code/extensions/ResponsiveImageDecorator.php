@@ -241,6 +241,16 @@ HTML;
 		}
 	}
 
+	public function getTinyBlurredSourceDataURI() {
+		$image = $this->getTinyBlurredImage();
+		if ($image) {
+			$dataURI = self::image_to_data_url($image);
+			return $dataURI;
+		}
+		return '';
+	}
+
+
 	public function getTinyBlurredSource() {
 		return $this->getTinyBlurredImage()->URL;
 	}
