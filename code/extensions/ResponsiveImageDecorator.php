@@ -237,7 +237,9 @@ HTML;
 	}
 
 	public function getTinyBlurredSource() {
-		return $this->getTinyBlurredImage()->URL;
+		if ($this->getTinyBlurredImage()) {
+			return $this->getTinyBlurredImage()->URL;
+		}
 	}
 
 	public function getTinyBlurredImage() {
@@ -274,37 +276,51 @@ HTML;
 	}
 
 	public function getSmallSource() {
+		$image = null;
 		if ($this->method === 'FillMax') {
-			return $this->original->FillMax($this->smallWidth, $this->smallHeight)->URL;
+			$image = $this->original->FillMax($this->smallWidth, $this->smallHeight);
+		} elseif (strstr($this->method, 'Height')) {
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->smallHeight);
+		} else {
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->smallWidth, $this->smallHeight);
 		}
-		if (strstr($this->method, 'Height')) {
-			return $this->original->getFormattedImage($this->getMethod(), $this->smallHeight)->URL;
+		if ($image) {
+			return $image->URL;
 		}
-		return $this->original->getFormattedImage($this->getMethod(), $this->smallWidth, $this->smallHeight)->URL;
 	}
 
 	public function getMediumSource() {
+		$image = null;
 		if ($this->method === 'FillMax') {
-			return $this->original->FillMax($this->medWidth, $this->medHeight)->URL;
+			$image = $this->original->FillMax($this->medWidth, $this->medHeight);
+		} elseif (strstr($this->method, 'Height')) {
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->medHeight);
+		} else {
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->medWidth, $this->medHeight);
 		}
-		if (strstr($this->method, 'Height')) {
-			return $this->original->getFormattedImage($this->getMethod(), $this->medHeight)->URL;
+		if ($image) {
+			return $image->URL;
 		}
-		return $this->original->getFormattedImage($this->getMethod(), $this->medWidth, $this->medHeight)->URL;
 	}
 
 	public function getLargeSource() {
+		$image = null;
+
 		if ($this->maxWidth == $this->original->getWidth()
 			&& $this->maxHeight == $this->original->getHeight()) {
 			return $this->original->getURL();
 		}
+
 		if ($this->method === 'FillMax') {
-			return $this->original->FillMax($this->maxWidth, $this->maxHeight)->URL;
+			$image = $this->original->FillMax($this->maxWidth, $this->maxHeight);
+		} elseif (strstr($this->method, 'Height')) {
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->maxHeight);
+		} else {
+			$image = $this->original->getFormattedImage($this->getMethod(), $this->maxWidth, $this->maxHeight);
 		}
-		if (strstr($this->method, 'Height')) {
-			return $this->original->getFormattedImage($this->getMethod(), $this->maxHeight)->URL;
+		if ($image) {
+			return $image->URL;
 		}
-		return $this->original->getFormattedImage($this->getMethod(), $this->maxWidth, $this->maxHeight)->URL;
 	}
 
 	public function getTag() {
