@@ -137,7 +137,13 @@ class Image_Responsive extends Image_Cached {
 
 	protected static function image_to_data_url($image) {
 		$absoluteFilename = BASE_PATH . DIRECTORY_SEPARATOR . $image->Filename;
+		if (!file_exists($absoluteFilename)) {
+			return false;
+		}
 		$imageData = file_get_contents($absoluteFilename);
+		if ($imageData === false) {
+			return false;
+		}
 		// Read image path, convert to base64 encoding
 		$imageData = base64_encode($imageData);
 		// Format the image SRC:  data:{mime};base64,{data};
@@ -230,9 +236,11 @@ class Image_Responsive extends Image_Cached {
 		$image = $this->getTinyBlurredImage();
 		if ($image) {
 			$dataURI = self::image_to_data_url($image);
-			return <<<HTML
+			if ($dataURI !== false) {
+				return <<<HTML
 		style="background-image: url({$dataURI}) no-repeat; background-size: cover;"
 HTML;
+			}
 		}
 	}
 
