@@ -34,13 +34,15 @@ class ResponsiveImageDecorator extends DataExtension {
 				$methodH = $methodW;
 			}
 			if ($this->owner->getHeight() == 0) {
-				throw new ResponsiveImageException('Source image has 0 height');
+				return null;
+				// throw new ResponsiveImageException('Source image has 0 height');
 			}
 			$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
 			$methodW     = $methodH * $aspectRatio;
 		} elseif (strstr($method, 'Width')) {
 			if ($this->owner->getHeight() == 0) {
-				throw new ResponsiveImageException('Source image has 0 height');
+				return null;
+				// throw new ResponsiveImageException('Source image has 0 height');
 			}
 			$aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
 			$methodH     = $methodW / $aspectRatio;
@@ -162,7 +164,7 @@ class Image_Responsive extends Image_Cached {
 			throw new ResponsiveImageException("No original image exists for Image_Responsive, ensure you call setOriginal first");
 		}
 		if (!($width && $height)) {
-			throw new ResponsiveImageException("0 pixel dimension source image");
+			// throw new ResponsiveImageException("0 pixel dimension source image");
 		}
 
 		$aspectRatio = ($height !== 0) ? $width / $height : 1;
