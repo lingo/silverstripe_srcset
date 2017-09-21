@@ -31,7 +31,7 @@ class ResponsiveImageDecorator extends DataExtension
             throw new ResponsiveImageException("No owner for decorator ResponsiveImageDecorator");
         }
 
-            try {
+        try {
             // Allow use of Responsive(query, 'SetHeight', heightInPx)
             //
             if (strstr($method, 'Height')) {
@@ -72,9 +72,9 @@ class ResponsiveImageDecorator extends DataExtension
             }
             $image->addExtraClasses($extraClasses);
             return $image;
+        } catch (ResponsiveImageException $ex) {
+            return null;
         }
-    } catch(ResponsiveImageException $ex) {
-        return null;
     }
 }
 
