@@ -11,12 +11,36 @@ class ResponsiveImageException extends Exception
 {
 }
 
+class ResponsiveImageDecorator extends DataExtension
+{
+    public function Responsive($mediaQuery=false, $method=false, $methodW=null, $methodH=null, $extraClasses='')
+    {
+        return new ResponsiveImage($this->owner, $mediaQuery);
+    }
+}
+
 /**
  * ResponsiveImage decorator for image class.
  * This is a helper for responsive design using the HTML5 <picture> tag OR <img srcset...>
  */
-class ResponsiveImageDecorator extends DataExtension
+class ResponsiveImage extends ViewableData
 {
+    protected $cachedImage  = null;
+    protected $method       = null;
+    protected $methodW      = null;
+    protected $methodH      = null;
+    protected $extraClasses = "";
+    protected $mediaQuery   = "";
+    protected $owner        = null;
+
+    public function __construct($owner, $mediaQuery) {
+        $this->mediaQuery = $mediaQuery;
+        $this->owner      = $owner;
+    }
+
+    public function forTemplate($field = null) {
+        return $this->getTag();
+    }
 
     /**
      * The new method provided on Image instances
@@ -30,29 +54,55 @@ class ResponsiveImageDecorator extends DataExtension
         if (!$this->owner) {
             throw new ResponsiveImageException("No owner for decorator ResponsiveImageDecorator");
         }
+        if ($method) {
+            $this->size($method, $methodW, $methodH);
+        }
+        if ($extraClasses) {
+            $this->addExtraClasses($extraClasses);
+        }
+        return $this;
+    }
+
+    public function size($method, $methodW, $methodH) {
+        $this->method  = $method;
+        $this->methodW = $methodW;
+        $this->methodH = $methodH;
+        return $this;
+    }
+
+    public function addExtraClasses($classes) {
+        $this->extraClasses = $classes;
+        return $this;
+    }
+
+    protected function getCachedImage() {
+        if ($this->cachedImage) {
+            return $this->cachedImage;
+        }
 
         try {
             // Allow use of Responsive(query, 'SetHeight', heightInPx)
             //
-            if (strstr($method, 'Height')) {
-                if ($methodH === null) {
-                    $methodH = $methodW;
+            if (strstr($this->method, 'Height')) {
+                if ($this->methodH === null) {
+                    $this->methodH = $this->methodW;
                 }
                 if ($this->owner->getHeight() == 0) {
                     throw new ResponsiveImageException('Source image has 0 height');
                 }
-                $aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
-                $methodW     = $methodH * $aspectRatio;
-            } elseif (strstr($method, 'Width')) {
+                $aspectRatio   = $this->owner->getWidth() / $this->owner->getHeight();
+                $this->methodW = $this->methodH * $aspectRatio;
+            } elseif (strstr($this->method, 'Width')) {
                 if ($this->owner->getHeight() == 0) {
                     throw new ResponsiveImageException('Source image has 0 height');
                 }
-                $aspectRatio = $this->owner->getWidth() / $this->owner->getHeight();
-                $methodH     = $methodW / $aspectRatio;
+                $aspectRatio   = $this->owner->getWidth() / $this->owner->getHeight();
+                $this->methodH = $this->methodW / $aspectRatio;
             }
 
-            $width        = $methodW ? $methodW : $this->owner->getWidth();
-            $height       = $methodH ? $methodH : $this->owner->getHeight();
+            $width  = $this->methodW ? $this->methodW : $this->owner->getWidth();
+            $height = $this->methodH ? $this->methodH : $this->owner->getHeight();
+
             if ($height   === null || $width === null) {
                 throw new ResponsiveImageException('Failed to obtain dimensions from owner image');
             }
@@ -63,17 +113,32 @@ class ResponsiveImageDecorator extends DataExtension
             $image->Title = $this->owner->Title;
             $image->setOriginal($this->owner, $width, $height);
 
-            if ($method) {
-                $image->setMethod($method);
+            if ($this->method) {
+                $image->setMethod($this->method);
             }
 
-            if ($mediaQuery) {
-                $image->setMediaQuery($mediaQuery);
+            if ($this->mediaQuery) {
+                $image->setMediaQuery($this->mediaQuery);
             }
-            $image->addExtraClasses($extraClasses);
+            $image->addExtraClasses($this->extraClasses);
+            $this->cachedImage = $image;
             return $image;
         } catch (ResponsiveImageException $ex) {
             return null;
+        }
+    }
+
+    public function getTag() {
+        $image = $this->getCachedImage();
+        if ($image) {
+            return $image->getTag();
+        }
+    }
+
+    public function getOpenTag() {
+        $image = $this->getCachedImage();
+        if ($image) {
+            return $image->getOpenTag();
         }
     }
 }
@@ -405,5 +470,9 @@ HTML;
     public function getExtraClasses()
     {
         return $this->extraClassNames;
+    }
+
+    public function getOpenTag() {
+        return $this->renderWith('ResponsiveImage_TagOpen');
     }
 }
