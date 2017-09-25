@@ -1,1 +1,1 @@
-$OpenTag <% if $SmallSource %> alt="<% if MenuTitle %>$MenuTitle<% else %>$Title<% end_if %>"><% else %> title="Missing image $Title" ><% end_if %>
+$OpenTag <% if $SmallSource %> alt="<% if MenuTitle %>$MenuTitle<% else %>$Title<% end_if %>"><% else %> src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Missing image $Title" ><% end_if %>
