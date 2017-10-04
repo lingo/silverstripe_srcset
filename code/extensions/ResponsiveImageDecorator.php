@@ -138,19 +138,19 @@ class ResponsiveImage extends ViewableData
     public function getOpenTag() {
         $image = $this->getCachedImage();
         if ($image) {
-            /**
-             * IF we render with source_file_comments enabled, then this breaks tags due to html comments within a tag.
-             * So, we temporarily disable, in case.
-             */
-            $commentsEnabled = Config::inst()->get('SSViewer', 'source_file_comments');
-            Config::inst()->update('SSViewer', 'source_file_comments', false);
-
             $html = $image->getOpenTag();
-
-            Config::inst()->update('SSViewer', 'source_file_comments', $commentsEnabled);
             return $html;
         }
     }
+
+    public function getBackgroundAttr()
+    {
+        $image = $this->getCachedImage();
+        if ($image) {
+            return $image->getBackgroundAttr();
+        }
+    }
+
 }
 
 
