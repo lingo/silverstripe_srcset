@@ -35,8 +35,11 @@ class ResponsiveImage extends ViewableData
         if (!$this->owner) {
             throw new ResponsiveImageException("No owner for decorator ResponsiveImageDecorator");
         }
+        if ($mediaQuery) {
+            $this->setMediaQuery($mediaQuery);
+        }
         if ($method) {
-            $this->size($method, $methodW, $methodH);
+            $this->setSize($method, $methodW, $methodH);
         }
         if ($extraClasses) {
             $this->addExtraClasses($extraClasses);
@@ -44,7 +47,12 @@ class ResponsiveImage extends ViewableData
         return $this;
     }
 
-    public function size($method, $methodW, $methodH) {
+    public function setMediaQuery($mediaQuery) {
+        $this->mediaQuery = $mediaQuery;
+        return $this;
+    }
+
+    public function setSize($method, $methodW, $methodH=0) {
         $this->method  = $method;
         $this->methodW = $methodW;
         $this->methodH = $methodH;
@@ -56,7 +64,7 @@ class ResponsiveImage extends ViewableData
         return $this;
     }
 
-    protected function getCachedImage() {
+    protected function getImage() {
         if ($this->cachedImage) {
             return $this->cachedImage;
         }
@@ -110,14 +118,14 @@ class ResponsiveImage extends ViewableData
     }
 
     public function getTag() {
-        $image = $this->getCachedImage();
+        $image = $this->getImage();
         if ($image) {
             return $image->getTag();
         }
     }
 
     public function getOpenTag() {
-        $image = $this->getCachedImage();
+        $image = $this->getImage();
         if ($image) {
             $html = $image->getOpenTag();
             return $html;
@@ -126,10 +134,19 @@ class ResponsiveImage extends ViewableData
 
     public function getBackgroundAttr()
     {
-        $image = $this->getCachedImage();
+        $image = $this->getImage();
         if ($image) {
             return $image->getBackgroundAttr();
         }
     }
 
+
+    public function __call($method, $arguments)
+    {
+        $image = $this->getImage();
+        if ($image && $image->hasMethod($method)) {
+            return call_user_func_array(array($image, $method), $arguments);
+        }
+        throw new Exception("Undefined method $method called on ResponsiveImage with args: " . join(',', $arguments));
+    }
 }
